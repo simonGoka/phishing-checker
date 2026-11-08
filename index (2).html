@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phishing Email Checker</title>
+<style>
+:root{--bg:#f4f4f4;--card:#fff;--text:#222;--border:#ccc;--btn:#2a5db0;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1d21;--card:#25282d;--text:#eee;--border:#444;--btn:#5b8def;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1b1d21;--card:#25282d;--text:#eee;--border:#444;--btn:#5b8def;color-scheme:dark}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.5}
+.wrap{max-width:650px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+h1{margin-top:0}
+textarea,input{width:100%;box-sizing:border-box;padding:8px;margin:6px 0 12px;font-size:15px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)}
+textarea{height:110px}
+button{background:var(--btn);color:#fff;border:none;padding:10px 16px;font-size:15px;border-radius:4px;cursor:pointer;margin-right:6px}
+#result{font-weight:bold;font-size:20px}
+.safe{color:#1e8e3e}.maybe{color:#c77700}.bad{color:#d93025}
+li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="card">
+<h1>Phishing Email Checker</h1>
+<h3>The problem</h3>
+<p>Phishing is when someone sends a fake email pretending to be a real company (like a bank) to steal your password or money. It’s one of the most common ways people get hacked, because it tricks the person instead of the computer.</p>
+</div>
+
+<div class="card">
+<h3>Try it: paste an email</h3>
+<label for="sender">Sender email address</label>
+<input id="sender" placeholder="example: support@paypa1-security.com">
+<label for="msg">Email text (include any links)</label>
+<textarea id="msg" placeholder="Paste the email here..."></textarea>
+<button onclick="check()">Check it</button>
+<button onclick="example()">Use an example</button>
+<p id="result"></p>
+<ul id="reasons"></ul>
+</div>
+
+<div class="card">
+<h3>How to protect yourself</h3>
+<ul>
+<li><b>Look at the sender address.</b> Real companies use their real domain, not weird spellings.</li>
+<li><b>Don’t click links in a panic.</b> Type the website address yourself instead.</li>
+<li><b>Use two-factor authentication (2FA).</b> Even if your password is stolen, they can’t log in easily.</li>
+<li><b>Use a password manager.</b> It won’t fill in your password on a fake site.</li>
+<li><b>Report it.</b> Tell your school or workplace IT so others don’t fall for it.</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>How this checker works</h3>
+<p>It adds up points for warning signs: urgent words, links that start with http instead of https, shortened links, links to a number address, and a sender name with numbers swapped for letters. It’s a simple tool, so it can be wrong. If you’re unsure, don’t click.</p>
+</div>
+
+</div>
+<script>
+function check(){
+var sender=document.getElementById("sender").value.toLowerCase();
+var msg=document.getElementById("msg").value.toLowerCase();
+var points=0;
+var reasons=[];
+
+var urgent=["urgent","immediately","suspended","locked","verify","act now","24 hours"];
+for(var i=0;i<urgent.length;i++){
+if(msg.indexOf(urgent[i])!==-1){points+=15;reasons.push("Urgent or scary word: “"+urgent[i]+"”");break;}
+}
+if(msg.indexOf("password")!==-1||msg.indexOf("credit card")!==-1||msg.indexOf("bank")!==-1){
+points+=20;reasons.push("Asks about passwords, cards or bank details");
+}
+if(msg.indexOf("http://")!==-1){
+points+=15;reasons.push("Link uses http (not secure)");
+}
+if(msg.indexOf("bit.ly")!==-1||msg.indexOf("tinyurl")!==-1){
+points+=15;reasons.push("Shortened link hides where it goes");
+}
+if(/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(msg)){
+points+=25;reasons.push("Link goes to a number address (IP)");
+}
+if(/[a-z]\d[a-z]/.test(sender.split("@")[1]||"")){
+points+=25;reasons.push("Sender domain has a number inside a word (like paypa1)");
+}
+if(sender.indexOf("@")===-1&&sender!==""){
+points+=10;reasons.push("Sender doesn’t look like a real email address");
+}
+
+var r=document.getElementById("result");
+if(sender===""&&msg===""){r.className="";r.textContent="Please paste something first.";document.getElementById("reasons").innerHTML="";return;}
+if(points>=50){r.className="bad";r.textContent="Likely phishing ("+points+" points)";}
+else if(points>=20){r.className="maybe";r.textContent="Suspicious ("+points+" points)";}
+else{r.className="safe";r.textContent="Looks okay ("+points+" points)";}
+
+var list=document.getElementById("reasons");
+list.innerHTML="";
+if(reasons.length===0){var li=document.createElement("li");li.textContent="No warning signs found.";list.appendChild(li);}
+for(var j=0;j<reasons.length;j++){
+var item=document.createElement("li");
+item.textContent=reasons[j];
+list.appendChild(item);
+}
+}
+function example(){
+document.getElementById("sender").value="support@paypa1-security.com";
+document.getElementById("msg").value="Dear customer, your account has been suspended. Verify your password immediately or it will be locked in 24 hours. Click here: http://192.168.4.20/login";
+check();
+}
+</script>
+</body>
+</html>
